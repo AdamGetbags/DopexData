@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
 """
-DOPEX API // decentralized option data
+DOPEX API // decentralized option data // https://www.dopex.io/
 https://github.com/dopex-io/dopex-api/blob/master/docs/v1/ENDPOINTS.md
 @author: adam getbags
-
 """
 
 # import modules
@@ -83,136 +81,108 @@ print(dtStart)
 # print(dfSSOV.underlyingPrice)
 
 """
-GET APY DATA // API V1
-"""
-
-# assign string variables to use when creating url
-assetSymbol = dfSSOV.underlyingSymbol[0]
-optionType = 'CALL' # 'PUT'
-
-# build url for APYs
-url = f'https://api.dopex.io/api/v1/ssov/apy?asset={assetSymbol}'
-
-# make get request
-res = requests.get(url)
-
-# convert response to dictionary
-apyData = json.loads(res.text)
-
-#review keys
-print(apyData['apy'])
-
-# build url for APYs with option type
-url = (
-    f'https://api.dopex.io/api/v1/ssov/'
-    f'apy?asset={assetSymbol}&type={optionType}'
-)
-
-# make get request
-res = requests.get(url)
-
-# convert response to dictionary
-apyData = json.loads(res.text)
-
-#review keys
-print(apyData['apy'])
-
-"""
 GET APY DATA // API V2
 """
 
-# assign v2 asset symbol
-assetSymbolV2 = dfSSOV.symbol[0]
+# assign SSOV symbol
+ssovSymbol = dfSSOV.symbol[0]
 
 # build url for APYs with option type
-url = f'https://api.dopex.io/api/v2/ssov/apy?symbol={assetSymbolV2}'
+url = f'https://api.dopex.io/api/v2/ssov/apy?symbol={ssovSymbol}'
+# make get request
+res = requests.get(url)
+
+# convert response to dictionary
+apyData = json.loads(res.text)
+
+#review keys
+print(apyData['apy'])
+
+"""
+GET IR VAULT DATA // API V2 // NO DICE
+"""
+
+# build url for APYs with option type
+url = 'https://api.dopex.io/api/v2/rateVaults'
+
+# make get request
+res = requests.get(url)
+
+"""
+GET STRADDLE DATA // API V2
+"""
+
+# build url for APYs
+url = 'https://api.dopex.io/api/v2/straddles'
 
 # make get request
 res = requests.get(url)
 
 # convert response to dictionary
-apyDataV2 = json.loads(res.text)
+straddleData = json.loads(res.text)
+
+#review keys // navigating data structure
+straddleData.keys()
+list(straddleData.keys())[0]
+straddleData[list(straddleData.keys())[0]]
+straddleData[list(straddleData.keys())[0]][0]
 
 """
-GET DEPOSIT DATA // API V1
+GET FARM TVL DATA // API V2
 """
 
-# rdpx
-assetSymbol = dfSSOV.underlyingSymbol[1]
+farmName = 'dpx-weth' # 'rdpx-weth'
 
-# build url for SSOV deposits // no dice
-url = (
-    f'https://api.dopex.io/api/v1/ssov/'
-    f'deposits?asset={assetSymbol}&type={optionType}'
-)    
-
-# make get request
-res = requests.get(url)
-
-# convert to dataframe
-deposits = pd.read_json(res.text)
-
-print(deposits)
-
-"""
-GET OPTION PRICE DATA // API V1
-"""
-
-# build url for SSOV option prices // no dice
-url = (
-    f'https://api.dopex.io/api/v1/ssov/'
-    f'options/prices?asset={assetSymbol}&type={optionType}'
-)    
-
-# make get request
-res = requests.get(url)
-
-# convert to dataframe 
-optionPrices = pd.read_json(res.text)
-
-print(optionPrices)
-
-"""
-GET OPTION USAGE DATA // API V1
-"""
-
-# build url for SSOV option usage // no dice
-url = (
-    f'https://api.dopex.io/api/v1/ssov/'
-    f'options/usage?asset={assetSymbol}&type={optionType}'
-)    
-
-# make get request
-res = requests.get(url)
-
-# convert to dataframe 
-optionUsage = pd.read_json(res.text)
-
-print(optionUsage)
-
-"""
-GET TOKEN PRICE DATA // API V1
-"""
-
-token = 'dpx' # 'rdpx'
-
-# build url for current token price
-url = f'https://api.dopex.io/api/v1/{token}/price'
+# build url for Farm TVL per pool
+url = f'https://api.dopex.io/api/v2/farms?pool={farmName}'
     
 # make get request
 res = requests.get(url)
 
 # convert to dataframe 
-tokenPrice = json.loads(res.text)
+farmTVL = json.loads(res.text)
 
-print(tokenPrice)
+print(farmTVL)
+
+"""
+GET AVAILABLE TOKENS FOR PRICE DATA // API V2
+"""
+
+# build url for current token price
+url = 'https://api.dopex.io/api/v2/price'
+    
+# make get request
+res = requests.get(url)
+
+# convert to dataframe 
+availableTokens = json.loads(res.text)
+tokenData = pd.DataFrame(availableTokens['supportedTokens'])
+
+"""
+GET TOKEN PRICE DATA // API V2
+"""
+
+# assign token
+token = tokenData.symbol[0]
+
+# build url for current token price
+url = f'https://api.dopex.io/v2/price/{token}'
+    
+# make get request
+res = requests.get(url)
+
+# prices + oracle type
+print(json.loads(res.text))
 
 """
 GET TOKEN SUPPLY DATA // API V1
 """
 
+# dpx
+assetSymbol = dfSSOV.underlyingSymbol[0]
+
 # build url for current token supply
-url = f'https://api.dopex.io/api/v1/{token}/supply'
+url = f'https://api.dopex.io/api/v1/{assetSymbol.lower()}/supply'
     
 # make get request
 res = requests.get(url)
@@ -227,7 +197,7 @@ GET TOKEN MARKET CAP DATA // API V1
 """
 
 # build url for current token mkt cap
-url = f'https://api.dopex.io/api/v1/{token}/market-cap'
+url = f'https://api.dopex.io/api/v1/{assetSymbol.lower()}/market-cap'
     
 # make get request
 res = requests.get(url)
@@ -238,33 +208,76 @@ mktCap = json.loads(res.text)
 print(mktCap)
 
 """
-GET FARM TVL DATA // API V1
+GET DEPOSIT DATA // API V1 // EMPTY
 """
 
-farmName = 'dpx-weth' # 'rdpx-weth'
+# dpx
+assetSymbol = dfSSOV.underlyingSymbol[0]
 
-# build url for Farm TVL per pool
-url = f'https://api.dopex.io/api/v1/farms/tvl?pool={farmName}'
-    
+# assign option type
+optionType = 'CALL' # 'PUT'
+
+# build url for SSOV deposits 
+url = (
+    f'https://api.dopex.io/api/v1/ssov/'
+    f'deposits?asset={assetSymbol}&type={optionType}'
+)    
+
+# make get request
+res = requests.get(url)
+
+# convert to dataframe
+deposits = pd.read_json(res.text)
+
+print(deposits)
+
+"""
+GET OPTION PRICE DATA // API V1 // EMPTY
+"""
+
+# build url for SSOV option prices
+url = (
+    f'https://api.dopex.io/api/v1/ssov/'
+    f'options/prices?asset={assetSymbol}&type={optionType}'
+)    
+
 # make get request
 res = requests.get(url)
 
 # convert to dataframe 
-farmTVL = json.loads(res.text)
+optionPrices = pd.read_json(res.text)
 
-print(farmTVL)
+print(optionPrices)
 
 """
-GET TVL DATA // API V1
+GET OPTION USAGE DATA // API V1 // EMPTY
+"""
+
+# build url for SSOV option usage
+url = (
+    f'https://api.dopex.io/api/v1/ssov/'
+    f'options/usage?asset={assetSymbol}&type={optionType}'
+)    
+
+# make get request
+res = requests.get(url)
+
+# convert to dataframe 
+optionUsage = pd.read_json(res.text)
+
+print(optionUsage)
+
+"""
+GET TVL DATA // API V1 // EMPTY
 """
 
 # build url for TVL
 url = 'https://api.dopex.io/api/v1/tvl'
 # url = 'https://api.dopex.io/api/v1/tvl?include=dpx-ssov,eth-ssov'
 # url = (
-#     f'https://api.dopex.io/api/v1/tvl?'
-#     f'include=dpx-farm,rdpx-farm,dpx-weth-farm,'
-#     f'rdpx-weth-farm,dpx-ssov,rdpx-ssov'
+    # f'https://api.dopex.io/api/v1/tvl?'
+    # f'include=dpx-farm,rdpx-farm,dpx-weth-farm,'
+    # f'rdpx-weth-farm,dpx-ssov,rdpx-ssov'
 # )
     
 # make get request
